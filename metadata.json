@@ -1,0 +1,6 @@
+{
+  "name": "TM NOC Issue Tracker & Ops Monitor",
+  "description": "Network Operations Center monitoring dashboard, past and present incident tracker, RCA guidelines, and operational SOP reference.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
