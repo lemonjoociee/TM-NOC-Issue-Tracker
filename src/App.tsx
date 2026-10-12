@@ -53,6 +53,7 @@ export default function App() {
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'warn' } | null>(null);
+  const [isLiveSyncing, setIsLiveSyncing] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -71,6 +72,62 @@ export default function App() {
       setToastMessage(null);
     }, 4000);
   };
+
+  // Automated background polling for real-time SharePoint sync
+  const pollSharePoint = async (silent = false) => {
+    try {
+      if (!silent) setIsLiveSyncing(true);
+      const res = await fetch('/api/sharepoint/live');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.issues) && data.issues.length > 0) {
+          setIssues(data.issues);
+          setLastSyncTime(data.lastSyncTime || 'Just now');
+          if (!silent) {
+            showToast(`Real-time synced with SharePoint: ${data.issues.length} issues up-to-date.`, 'success');
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Real-time SharePoint poll error:', e);
+    } finally {
+      if (!silent) setIsLiveSyncing(false);
+    }
+  };
+
+  const triggerManualRefresh = async () => {
+    setIsLiveSyncing(true);
+    try {
+      const res = await fetch('/api/sharepoint/refresh', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.issues) && data.issues.length > 0) {
+          setIssues(data.issues);
+          setLastSyncTime(data.lastSyncTime || 'Just now');
+          showToast(`SharePoint refreshed: ${data.issues.length} issues updated!`, 'success');
+        } else {
+          showToast('SharePoint refreshed.', 'info');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Could not refresh from SharePoint.', 'warn');
+    } finally {
+      setIsLiveSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    // Initial fetch from live SharePoint
+    pollSharePoint(true);
+
+    // Continuous polling every 20 seconds so changes in SharePoint reflect live without uploading
+    const timer = setInterval(() => {
+      pollSharePoint(true);
+    }, 20000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Recompute monthly summaries dynamically from state
   const monthlySummaries: MonthlySummary[] = useMemo(() => {
@@ -237,6 +294,8 @@ export default function App() {
         onExportCSV={handleExportCSV}
         onImportCSV={handleImportCSVClick}
         onOpenSharePointSync={() => setIsSharePointModalOpen(true)}
+        onRefreshSharePoint={triggerManualRefresh}
+        isLiveSyncing={isLiveSyncing}
         onResetData={handleResetData}
         activeIssuesCount={activeIssuesCount}
       />
@@ -274,6 +333,8 @@ export default function App() {
             onNavigateToGuidelines={handleNavigateToGuidelines}
             onOpenNewIssue={() => setIsNewIssueModalOpen(true)}
             onOpenSharePointSync={() => setIsSharePointModalOpen(true)}
+            onRefreshSharePoint={triggerManualRefresh}
+            isLiveSyncing={isLiveSyncing}
             lastSyncTime={lastSyncTime}
           />
         )}

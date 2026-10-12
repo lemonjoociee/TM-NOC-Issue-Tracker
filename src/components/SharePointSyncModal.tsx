@@ -109,19 +109,30 @@ export const SharePointSyncModal: React.FC<SharePointSyncModalProps> = ({
     setSyncStatus(`Exported complete multi-sheet Excel file "${SHAREPOINT_CONFIG.fileName}".`);
   };
 
-  // Mock live SharePoint query probe
+  // Real live SharePoint query probe via backend proxy
   const handleDirectWebSync = async () => {
     setIsSyncing(true);
-    setSyncStatus('Connecting to Scicom SharePoint host (scicommsc-my.sharepoint.com)...');
+    setSyncStatus('Connecting to Scicom SharePoint host and downloading live workbook...');
 
-    // Because SharePoint organizational links require Microsoft Entra ID tenant authentication in browsers,
-    // we attempt a fetch and provide clear actionable guidance with 1-click fallback.
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/sharepoint/refresh', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.issues) && data.issues.length > 0) {
+          onSyncSuccess(data.issues, `Direct SharePoint link sync: ${data.issues.length} issues`);
+          setSyncStatus(`Live sync successful! Synchronized ${data.issues.length} active issues directly from SharePoint. No upload needed!`);
+        } else {
+          setSyncStatus('Connected to SharePoint, baseline issues retained.');
+        }
+      } else {
+        setSyncStatus(`SharePoint probe returned status ${res.status}.`);
+      }
+    } catch (e: any) {
+      console.error(e);
+      setSyncStatus(`Sync error: ${e?.message || 'Failed to fetch from backend'}`);
+    } finally {
       setIsSyncing(false);
-      setSyncStatus(
-        'Connected to SharePoint target document. Note: Browser CORS restrictions require organizational SSO session or direct file upload. Drag or upload your local "Issue Tracker for TM NOC.xlsx" or use the direct open button.'
-      );
-    }, 1200);
+    }
   };
 
   const webhookUrl = `${window.location.origin}/api/sharepoint/webhook`;
@@ -232,9 +243,9 @@ export const SharePointSyncModal: React.FC<SharePointSyncModalProps> = ({
                 <span className="text-slate-300 font-medium">{SHAREPOINT_CONFIG.tenantUser}</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Doc GUID:</span>
-                <span className="text-slate-300 font-mono truncate block" title={SHAREPOINT_CONFIG.sourcedoc}>
-                  {SHAREPOINT_CONFIG.sourcedoc}
+                <span className="text-slate-500 block">Share Token:</span>
+                <span className="text-slate-300 font-mono truncate block" title={SHAREPOINT_CONFIG.token}>
+                  {SHAREPOINT_CONFIG.token}
                 </span>
               </div>
               <div>
@@ -294,10 +305,10 @@ export const SharePointSyncModal: React.FC<SharePointSyncModalProps> = ({
                 <button
                   onClick={handleDirectWebSync}
                   disabled={isSyncing}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 hover:text-white transition-colors cursor-pointer font-medium"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 text-white transition-colors cursor-pointer font-medium shadow-sm"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>Trigger SharePoint Probe</span>
+                  <span>Sync Live from SharePoint (No Upload)</span>
                 </button>
 
                 <button

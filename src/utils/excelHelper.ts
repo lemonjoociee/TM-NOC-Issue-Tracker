@@ -2,12 +2,13 @@ import * as XLSX from 'xlsx';
 import { Issue, MonthName, MonthlySummary } from '../types/issue';
 
 export const SHAREPOINT_CONFIG = {
-  url: 'https://scicommsc-my.sharepoint.com/:x:/r/personal/rajeev_k_scicom_com_my/_layouts/15/Doc.aspx?sourcedoc=%7B673FEBA1-CB59-4871-B088-F85035B5F086%7D&file=Issue%20Tracker%20for%20TM%20NOC.xlsx&fromShare=true&action=default&mobileredirect=true',
+  url: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48?e=jZ8DVv',
+  downloadUrl: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48?download=1',
   fileName: 'Issue Tracker for TM NOC.xlsx',
-  sourcedoc: '{673FEBA1-CB59-4871-B088-F85035B5F086}',
-  tenantUser: 'rajeev_k_scicom_com_my',
+  token: 'IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48',
+  tenantUser: 'izzul_a_scicom_com_my',
   organization: 'Scicom / TM NOC',
-  embedUrl: 'https://scicommsc-my.sharepoint.com/:x:/r/personal/rajeev_k_scicom_com_my/_layouts/15/Doc.aspx?sourcedoc=%7B673FEBA1-CB59-4871-B088-F85035B5F086%7D&file=Issue%20Tracker%20for%20TM%20NOC.xlsx&action=embedview',
+  embedUrl: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48?action=embedview',
 };
 
 /**

@@ -8,6 +8,8 @@ interface HeaderProps {
   onExportCSV: () => void;
   onImportCSV: () => void;
   onOpenSharePointSync: () => void;
+  onRefreshSharePoint?: () => void;
+  isLiveSyncing?: boolean;
   onResetData: () => void;
   activeIssuesCount: number;
 }
@@ -19,6 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
   onExportCSV,
   onImportCSV,
   onOpenSharePointSync,
+  onRefreshSharePoint,
+  isLiveSyncing = false,
   onResetData,
   activeIssuesCount,
 }) => {
@@ -95,12 +99,20 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Zone 3: Primary action & utilities */}
           <div className="flex items-center gap-2.5 shrink-0">
             <button
-              onClick={onOpenSharePointSync}
-              title="Real-time sync with Scicom SharePoint: Issue Tracker for TM NOC.xlsx"
+              onClick={onRefreshSharePoint || onOpenSharePointSync}
+              title="Real-time sync with Scicom SharePoint (Click to refresh now)"
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 rounded-lg border border-emerald-500/40 transition-colors whitespace-nowrap cursor-pointer shadow-sm"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Sync SharePoint</span>
+              <span className={`w-2 h-2 rounded-full bg-emerald-400 ${isLiveSyncing ? 'animate-ping' : 'animate-pulse'}`} />
+              <span>{isLiveSyncing ? 'Syncing...' : 'SharePoint Live'}</span>
+            </button>
+
+            <button
+              onClick={onOpenSharePointSync}
+              title="Configure SharePoint Sync settings & view link"
+              className="hidden lg:flex items-center gap-1 px-2 py-1.5 text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+            >
+              <span>Settings</span>
             </button>
 
             <button

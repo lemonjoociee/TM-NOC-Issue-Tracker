@@ -20,6 +20,8 @@ interface DashboardViewProps {
   onNavigateToGuidelines: (searchQuery?: string) => void;
   onOpenNewIssue: () => void;
   onOpenSharePointSync: () => void;
+  onRefreshSharePoint?: () => void;
+  isLiveSyncing?: boolean;
   lastSyncTime: string;
 }
 
@@ -31,6 +33,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateToGuidelines,
   onOpenNewIssue,
   onOpenSharePointSync,
+  onRefreshSharePoint,
+  isLiveSyncing = false,
   lastSyncTime,
 }) => {
   // Present issues (not yet resolved)
@@ -47,36 +51,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* SharePoint Live Synchronization Ribbon */}
       <div className="bg-slate-900/90 rounded-xl border border-emerald-500/30 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs bg-gradient-to-r from-emerald-950/30 via-slate-900/90 to-slate-900/90">
         <div className="flex items-center gap-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          <div className={`w-2.5 h-2.5 rounded-full bg-emerald-400 ${isLiveSyncing ? 'animate-ping' : 'animate-pulse'} shrink-0`} />
           <div className="truncate">
-            <span className="font-semibold text-white">SharePoint Live Sync Active</span>
+            <span className="font-semibold text-white">SharePoint Real-Time Sync</span>
             <span className="text-slate-500 mx-2">·</span>
             <span className="text-slate-300 font-mono text-[11px] truncate">
-              Issue Tracker for TM NOC.xlsx
+              Auto-updating from Scicom SharePoint
             </span>
             <span className="text-slate-500 mx-2">·</span>
-            <span className="text-slate-400 font-mono text-[11px] tabular-nums">
-              Synced: {lastSyncTime}
+            <span className="text-emerald-400 font-mono text-[11px] tabular-nums font-semibold">
+              {lastSyncTime}
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={onRefreshSharePoint}
+            disabled={isLiveSyncing}
+            className="px-3 py-1 bg-emerald-600/30 hover:bg-emerald-600/40 text-emerald-200 border border-emerald-500/50 rounded-lg font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <span className={`w-1.5 h-1.5 rounded-full bg-emerald-400 ${isLiveSyncing ? 'animate-spin' : ''}`} />
+            <span>{isLiveSyncing ? 'Syncing...' : 'Sync Now'}</span>
+          </button>
           <a
-            href="https://scicommsc-my.sharepoint.com/:x:/r/personal/rajeev_k_scicom_com_my/_layouts/15/Doc.aspx?sourcedoc=%7B673FEBA1-CB59-4871-B088-F85035B5F086%7D&file=Issue%20Tracker%20for%20TM%20NOC.xlsx&fromShare=true&action=default&mobileredirect=true"
+            href="https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48?e=jZ8DVv"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-400 hover:text-white transition-colors flex items-center gap-1 font-medium"
           >
-            <span>Open in Excel Online</span>
+            <span>Open in SharePoint</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
-          <button
-            onClick={onOpenSharePointSync}
-            className="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 rounded-lg font-semibold transition-colors cursor-pointer"
-          >
-            Sync / Upload File
-          </button>
         </div>
       </div>
 
