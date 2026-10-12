@@ -11,6 +11,8 @@ interface TrackerTableViewProps {
     priority?: string;
   };
   onExportCSV: () => void;
+  onOpenSharePointSync?: () => void;
+  onExportExcel?: () => void;
 }
 
 export const TrackerTableView: React.FC<TrackerTableViewProps> = ({
@@ -18,6 +20,8 @@ export const TrackerTableView: React.FC<TrackerTableViewProps> = ({
   onSelectIssue,
   initialFilter,
   onExportCSV,
+  onOpenSharePointSync,
+  onExportExcel,
 }) => {
   // Segment view: 'all' | 'present' | 'past'
   const [viewSegment, setViewSegment] = useState<'all' | 'present' | 'past'>(
@@ -324,13 +328,36 @@ export const TrackerTableView: React.FC<TrackerTableViewProps> = ({
             )}
           </div>
 
-          <button
-            onClick={onExportCSV}
-            className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <Download className="w-3 h-3 text-slate-400" />
-            <span>Export CSV</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenSharePointSync && (
+              <button
+                onClick={onOpenSharePointSync}
+                className="text-xs font-semibold text-emerald-300 hover:text-emerald-200 bg-emerald-950/40 hover:bg-emerald-900/40 px-2.5 py-1 rounded-lg border border-emerald-500/30 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span>SharePoint Sync</span>
+              </button>
+            )}
+
+            {onExportExcel && (
+              <button
+                onClick={onExportExcel}
+                className="text-xs text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Download multi-sheet Issue Tracker for TM NOC.xlsx"
+              >
+                <Download className="w-3 h-3 text-emerald-400" />
+                <span>Export Excel (.xlsx)</span>
+              </button>
+            )}
+
+            <button
+              onClick={onExportCSV}
+              className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Download className="w-3 h-3 text-slate-400" />
+              <span>CSV</span>
+            </button>
+          </div>
         </div>
       </div>
 

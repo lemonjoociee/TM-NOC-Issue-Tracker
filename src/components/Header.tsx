@@ -7,6 +7,7 @@ interface HeaderProps {
   onOpenNewIssue: () => void;
   onExportCSV: () => void;
   onImportCSV: () => void;
+  onOpenSharePointSync: () => void;
   onResetData: () => void;
   activeIssuesCount: number;
 }
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenNewIssue,
   onExportCSV,
   onImportCSV,
+  onOpenSharePointSync,
   onResetData,
   activeIssuesCount,
 }) => {
@@ -91,32 +93,23 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Zone 3: Primary action & utilities */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={onOpenSharePointSync}
+              title="Real-time sync with Scicom SharePoint: Issue Tracker for TM NOC.xlsx"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900/60 rounded-lg border border-emerald-500/40 transition-colors whitespace-nowrap cursor-pointer shadow-sm"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Sync SharePoint</span>
+            </button>
+
             <button
               onClick={onExportCSV}
               title="Export Tracker as CSV formatted sheet"
               className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors whitespace-nowrap cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Export CSV</span>
-            </button>
-
-            <button
-              onClick={onImportCSV}
-              title="Import CSV issue list"
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-800/80 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors whitespace-nowrap cursor-pointer"
-            >
-              <Upload className="w-3.5 h-3.5" />
-              <span>Import CSV</span>
-            </button>
-
-            <button
-              onClick={onResetData}
-              title="Reset to default 107 records dataset"
-              className="hidden xl:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 bg-transparent hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-3 h-3" />
-              <span>Reset</span>
+              <span>Export</span>
             </button>
 
             <button

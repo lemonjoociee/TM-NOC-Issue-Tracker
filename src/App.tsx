@@ -8,7 +8,9 @@ import { GuidelinesView } from './components/GuidelinesView';
 import { MonthlyMatrixView } from './components/MonthlyMatrixView';
 import { IssueDetailModal } from './components/IssueDetailModal';
 import { NewIssueModal } from './components/NewIssueModal';
+import { SharePointSyncModal } from './components/SharePointSyncModal';
 import { exportIssuesToCSV, parseCSVToIssues } from './utils/csvHelper';
+import { exportIssuesToExcel } from './utils/excelHelper';
 import { CheckCircle2, AlertTriangle, Info, Bell } from 'lucide-react';
 
 const STORAGE_KEY = 'tm_noc_issue_tracker_data_v1';
@@ -36,6 +38,8 @@ export default function App() {
   // Modal states
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [isNewIssueModalOpen, setIsNewIssueModalOpen] = useState(false);
+  const [isSharePointModalOpen, setIsSharePointModalOpen] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string>('Live (Auto-cached)');
 
   // Filters passed to tracker view
   const [trackerFilter, setTrackerFilter] = useState<{
@@ -150,6 +154,18 @@ export default function App() {
     showToast(`Exported ${issues.length} incidents to CSV file.`, 'info');
   };
 
+  const handleExportExcel = () => {
+    exportIssuesToExcel(issues, monthlySummaries);
+    showToast(`Exported ${issues.length} incidents to "Issue Tracker for TM NOC.xlsx".`, 'info');
+  };
+
+  const handleSharePointSyncSuccess = (newIssues: Issue[], sourceInfo: string) => {
+    setIssues(newIssues);
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setLastSyncTime(`Synced at ${now}`);
+    showToast(`SharePoint sync successful: ${sourceInfo}`, 'success');
+  };
+
   const handleImportCSVClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -220,6 +236,7 @@ export default function App() {
         onOpenNewIssue={() => setIsNewIssueModalOpen(true)}
         onExportCSV={handleExportCSV}
         onImportCSV={handleImportCSVClick}
+        onOpenSharePointSync={() => setIsSharePointModalOpen(true)}
         onResetData={handleResetData}
         activeIssuesCount={activeIssuesCount}
       />
@@ -256,6 +273,8 @@ export default function App() {
             onNavigateToTracker={handleNavigateToTracker}
             onNavigateToGuidelines={handleNavigateToGuidelines}
             onOpenNewIssue={() => setIsNewIssueModalOpen(true)}
+            onOpenSharePointSync={() => setIsSharePointModalOpen(true)}
+            lastSyncTime={lastSyncTime}
           />
         )}
 
@@ -265,6 +284,8 @@ export default function App() {
             onSelectIssue={(issue) => setSelectedIssue(issue)}
             initialFilter={trackerFilter}
             onExportCSV={handleExportCSV}
+            onOpenSharePointSync={() => setIsSharePointModalOpen(true)}
+            onExportExcel={handleExportExcel}
           />
         )}
 
@@ -286,6 +307,15 @@ export default function App() {
       </main>
 
       {/* Modals */}
+      <SharePointSyncModal
+        isOpen={isSharePointModalOpen}
+        onClose={() => setIsSharePointModalOpen(false)}
+        issues={issues}
+        summaries={monthlySummaries}
+        onSyncSuccess={handleSharePointSyncSuccess}
+        lastSyncTime={lastSyncTime}
+      />
+
       <IssueDetailModal
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
