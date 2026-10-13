@@ -75,7 +75,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span>{isLiveSyncing ? 'Syncing...' : 'Sync Now'}</span>
           </button>
           <a
-            href="https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?e=ShaOLJ"
+            href="https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY?e=ln7nZo"
             target="_blank"
             rel="noopener noreferrer"
             className="text-slate-400 hover:text-white transition-colors flex items-center gap-1 font-medium"

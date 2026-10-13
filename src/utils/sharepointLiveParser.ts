@@ -2,10 +2,10 @@ import * as XLSX from 'xlsx';
 import { Issue, MonthName, MonthlySummary, Priority, IssueStatus, RcaStatus } from '../types/issue';
 
 export const SHAREPOINT_DIRECT_LINK =
-  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?e=ShaOLJ';
+  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY?e=ln7nZo';
 
 export const SHAREPOINT_DOWNLOAD_URL =
-  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?download=1';
+  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY?download=1';
 
 export function formatExcelDate(val: any): string {
   if (!val) return '';
@@ -103,7 +103,14 @@ export function parseSharePointWorkbook(buffer: Buffer | ArrayBuffer): {
   ];
 
   for (const config of monthConfigs) {
-    const sheetName = wb.SheetNames.find((s) => s.toLowerCase().includes(config.sheetKeyword));
+    const sheetName =
+      wb.SheetNames.find(
+        (s) => s.toLowerCase().includes(config.sheetKeyword) && s.toLowerCase().includes('status report')
+      ) ||
+      wb.SheetNames.find(
+        (s) => s.toLowerCase().includes(config.sheetKeyword) && !s.toLowerCase().includes('dashboard')
+      ) ||
+      wb.SheetNames.find((s) => s.toLowerCase().includes(config.sheetKeyword));
     if (!sheetName) continue;
 
     const ws = wb.Sheets[sheetName];
@@ -115,7 +122,7 @@ export function parseSharePointWorkbook(buffer: Buffer | ArrayBuffer): {
       // Find list of issue column
       const descKey = Object.keys(row).find((k) => k.toLowerCase().includes('list of issue') || k.toLowerCase().includes('issue'));
       const longDescription = descKey ? String(row[descKey] ?? '').trim() : '';
-      if (!longDescription || longDescription === ' ') return;
+      if (!longDescription || longDescription === ' ' || longDescription.replace(/\u00a0/g, '').trim() === '') return;
 
       // Date of Escalation
       const dateKey = Object.keys(row).find(

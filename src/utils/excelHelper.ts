@@ -2,13 +2,13 @@ import * as XLSX from 'xlsx';
 import { Issue, MonthName, MonthlySummary } from '../types/issue';
 
 export const SHAREPOINT_CONFIG = {
-  url: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?e=ShaOLJ',
-  downloadUrl: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?download=1',
+  url: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY?e=ln7nZo',
+  downloadUrl: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY?download=1',
   fileName: 'Issue Tracker for TM NOC.xlsx',
-  token: 'IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY',
+  token: 'IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY',
   tenantUser: 'izzul_a_scicom_com_my',
   organization: 'Scicom / TM NOC',
-  embedUrl: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?action=embedview',
+  embedUrl: 'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQBHvM-VrkZZSop0Qba4jzRaAaUtutk3k7RM-8B1fJlhZhY?action=embedview',
 };
 
 /**
@@ -20,8 +20,8 @@ export function parseExcelToIssues(buffer: ArrayBuffer): { issues: Issue[]; shee
   const processedIds = new Set<number>();
 
   for (const sheetName of workbook.SheetNames) {
-    // If it's pure summary sheet without # column, skip or handle separately
-    if (sheetName.toLowerCase().includes('summary') || sheetName.toLowerCase() === 'dashboard') {
+    // If it's pure summary sheet or dashboard sheet, skip
+    if (sheetName.toLowerCase().includes('summary') || sheetName.toLowerCase().includes('dashboard')) {
       continue;
     }
 
