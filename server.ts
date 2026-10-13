@@ -35,14 +35,51 @@ let liveCache: LiveCache = {
   error: null,
 };
 
+let currentSharePointUrl = SHAREPOINT_DIRECT_LINK;
+
+function getDownloadUrl(webUrl: string): string {
+  try {
+    const u = new URL(webUrl);
+    u.searchParams.set('download', '1');
+    return u.toString();
+  } catch {
+    return SHAREPOINT_DOWNLOAD_URL;
+  }
+}
+
+// Connected SSE clients for instant live push
+const sseClients = new Set<express.Response>();
+
+function broadcastSseUpdate() {
+  const payload = JSON.stringify({
+    type: 'sharepoint_update',
+    issues: liveCache.issues,
+    summaries: liveCache.summaries,
+    lastSyncTime: liveCache.lastSyncTime,
+    lastSyncIso: liveCache.lastSyncIso,
+    totalIssues: liveCache.totalIssues,
+    targetUrl: currentSharePointUrl,
+  });
+
+  for (const client of sseClients) {
+    try {
+      client.write(`data: ${payload}\n\n`);
+    } catch {
+      sseClients.delete(client);
+    }
+  }
+}
+
 /**
  * Downloads and parses the live SharePoint spreadsheet directly using cookie redirection
  */
 async function fetchAndSyncSharePoint(): Promise<boolean> {
   try {
     liveCache.status = 'syncing';
+    const downloadUrl = getDownloadUrl(currentSharePointUrl);
+
     // Step 1: Follow manual redirect to extract FedAuth authentication cookie
-    const res1 = await fetch(SHAREPOINT_DOWNLOAD_URL, {
+    const res1 = await fetch(downloadUrl, {
       redirect: 'manual',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
@@ -99,7 +136,8 @@ async function fetchAndSyncSharePoint(): Promise<boolean> {
         status: 'synced',
         error: null,
       };
-      console.log(`[SharePoint Sync] Successfully synced ${parsed.issues.length} live issues at ${timeStr}`);
+      console.log(`[SharePoint Sync] Synced ${parsed.issues.length} live issues at ${timeStr}`);
+      broadcastSseUpdate();
       return true;
     }
   } catch (err: any) {
@@ -113,17 +151,44 @@ async function fetchAndSyncSharePoint(): Promise<boolean> {
 // Initial sync on startup
 fetchAndSyncSharePoint();
 
-// Background real-time polling every 20 seconds
+// Fast background real-time polling every 10 seconds
 setInterval(() => {
   fetchAndSyncSharePoint();
-}, 20000);
+}, 10000);
 
 // API Routes
 app.get('/api/sharepoint/live', (req, res) => {
   res.json({
     success: true,
     ...liveCache,
-    targetUrl: SHAREPOINT_DIRECT_LINK,
+    targetUrl: currentSharePointUrl,
+  });
+});
+
+// Server-Sent Events (SSE) for instantaneous push updates when SharePoint changes
+app.get('/api/sharepoint/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
+
+  // Send current state immediately
+  res.write(
+    `data: ${JSON.stringify({
+      type: 'initial_state',
+      issues: liveCache.issues,
+      summaries: liveCache.summaries,
+      lastSyncTime: liveCache.lastSyncTime,
+      lastSyncIso: liveCache.lastSyncIso,
+      totalIssues: liveCache.totalIssues,
+      targetUrl: currentSharePointUrl,
+    })}\n\n`
+  );
+
+  sseClients.add(res);
+
+  req.on('close', () => {
+    sseClients.delete(res);
   });
 });
 
@@ -132,14 +197,29 @@ app.post('/api/sharepoint/refresh', async (req, res) => {
   res.json({
     success: ok,
     ...liveCache,
-    targetUrl: SHAREPOINT_DIRECT_LINK,
+    targetUrl: currentSharePointUrl,
   });
+});
+
+app.post('/api/sharepoint/config', async (req, res) => {
+  const { url } = req.body;
+  if (url && typeof url === 'string') {
+    currentSharePointUrl = url.trim();
+    console.log(`[SharePoint Config] Updated target link to: ${currentSharePointUrl}`);
+    const ok = await fetchAndSyncSharePoint();
+    return res.json({
+      success: ok,
+      targetUrl: currentSharePointUrl,
+      ...liveCache,
+    });
+  }
+  res.status(400).json({ error: 'Invalid URL provided' });
 });
 
 app.get('/api/sharepoint/status', (req, res) => {
   res.json({
     connected: true,
-    targetUrl: SHAREPOINT_DIRECT_LINK,
+    targetUrl: currentSharePointUrl,
     status: liveCache.status,
     lastSyncTime: liveCache.lastSyncTime,
     lastSyncIso: liveCache.lastSyncIso,

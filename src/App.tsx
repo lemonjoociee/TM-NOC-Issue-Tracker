@@ -73,7 +73,7 @@ export default function App() {
     }, 4000);
   };
 
-  // Automated background polling for real-time SharePoint sync
+  // Automated background polling & SSE stream for real-time SharePoint sync
   const pollSharePoint = async (silent = false) => {
     try {
       if (!silent) setIsLiveSyncing(true);
@@ -118,15 +118,55 @@ export default function App() {
   };
 
   useEffect(() => {
-    // Initial fetch from live SharePoint
+    // 1. Initial live sync
     pollSharePoint(true);
 
-    // Continuous polling every 20 seconds so changes in SharePoint reflect live without uploading
+    // 2. Connect to Server-Sent Events stream for instant push when SharePoint changes
+    let evtSource: EventSource | null = null;
+    try {
+      evtSource = new EventSource('/api/sharepoint/events');
+      evtSource.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.issues && Array.isArray(payload.issues) && payload.issues.length > 0) {
+            setIssues(payload.issues);
+            setLastSyncTime(payload.lastSyncTime || 'Just now');
+            if (payload.type === 'sharepoint_update') {
+              showToast(`Live update detected from SharePoint (${payload.totalIssues} issues)`, 'success');
+            }
+          }
+        } catch (err) {
+          console.warn('Failed to parse SSE payload:', err);
+        }
+      };
+      evtSource.onerror = () => {
+        // Fallback gracefully to timer polling if SSE drops
+      };
+    } catch (e) {
+      console.warn('SSE not supported or failed to connect:', e);
+    }
+
+    // 3. Fast polling every 10 seconds as resilient fallback
     const timer = setInterval(() => {
       pollSharePoint(true);
-    }, 20000);
+    }, 10000);
 
-    return () => clearInterval(timer);
+    // 4. Instant re-sync whenever user focuses tab after editing in SharePoint
+    const handleFocus = () => {
+      pollSharePoint(true);
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        pollSharePoint(true);
+      }
+    });
+
+    return () => {
+      clearInterval(timer);
+      if (evtSource) evtSource.close();
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   // Recompute monthly summaries dynamically from state

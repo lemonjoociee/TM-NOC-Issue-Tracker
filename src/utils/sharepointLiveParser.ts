@@ -2,10 +2,10 @@ import * as XLSX from 'xlsx';
 import { Issue, MonthName, MonthlySummary, Priority, IssueStatus, RcaStatus } from '../types/issue';
 
 export const SHAREPOINT_DIRECT_LINK =
-  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48?e=jZ8DVv';
+  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?e=ShaOLJ';
 
 export const SHAREPOINT_DOWNLOAD_URL =
-  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQCOjFnzSs6iRrYh0IvH7dOTAYH4OJBC4fj-pviWeyrXz48?download=1';
+  'https://scicommsc-my.sharepoint.com/:x:/g/personal/izzul_a_scicom_com_my/IQAJT83V2GVUQILtb1zb_rzkAf-RVaRoXeOxJ9nQewb7BzY?download=1';
 
 export function formatExcelDate(val: any): string {
   if (!val) return '';
